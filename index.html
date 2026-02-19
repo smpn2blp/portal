@@ -1,418 +1,45 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Sekolah Digital</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        navy: { 800: '#1e213a', 900: '#111322' },
-                        gold: { 500: '#d4af37' }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #1e213a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Hide scrollbar for gallery lightbox */
-        .no-scroll { overflow: hidden; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistem Informasi Sekolah</title>
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/9/98/Kota_Bengkulu.png" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #eee;
+      overflow: hidden; /* Mencegah scroll ganda */
+    }
+
+    .iframe-container {
+      width: 100%;
+      height: 100dvh; /* Menggunakan dvh agar pas di mobile browser */
+      overflow: hidden;
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
-
-    <nav class="bg-navy-900 text-white shadow-lg sticky top-0 z-40">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="font-bold text-xl tracking-wider cursor-pointer flex items-center gap-2" onclick="app.showPage('home')">
-                <span>🏫</span> <span id="nav-sekolah-nama">SISEKOLAH</span>
-            </div>
-            <div class="hidden md:flex gap-8 text-sm font-medium">
-                <button onclick="app.showPage('home')" class="hover:text-gold-500 transition">Beranda</button>
-                <button onclick="app.showPage('siswa')" class="hover:text-gold-500 transition">Siswa</button>
-                <button onclick="app.showPage('guru')" class="hover:text-gold-500 transition">Guru & Staf</button>
-                <button onclick="app.showPage('dokumentasi')" class="hover:text-gold-500 transition">Galeri</button>
-            </div>
-            <button class="md:hidden text-2xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">☰</button>
-        </div>
-        <div id="mobile-menu" class="hidden md:hidden bg-navy-800 p-4 flex flex-col gap-2">
-             <button onclick="app.showPage('home')" class="text-left py-2 border-b border-gray-700">Beranda</button>
-             <button onclick="app.showPage('siswa')" class="text-left py-2 border-b border-gray-700">Data Siswa</button>
-             <button onclick="app.showPage('guru')" class="text-left py-2 border-b border-gray-700">Guru</button>
-             <button onclick="app.showPage('dokumentasi')" class="text-left py-2">Galeri</button>
-        </div>
-    </nav>
-
-    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center">
-        <div class="loader mb-4"></div>
-        <p class="text-gray-500 text-sm animate-pulse">Menghubungkan ke Database Sekolah...</p>
-    </div>
-
-    <main class="flex-grow container mx-auto px-4 py-8 relative">
-
-        <section id="page-home" class="page-section fade-in">
-            <div class="text-center py-10">
-                <h1 class="text-4xl font-bold text-navy-900 mb-2" id="home-title">Selamat Datang</h1>
-                <p class="text-gray-500 mb-10 max-w-2xl mx-auto">Portal informasi resmi terintegrasi. Akses data akademik dan kegiatan sekolah secara real-time.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 hover:-translate-y-1 transition duration-300">
-                        <div class="text-3xl font-bold text-navy-900 mb-1" id="count-siswa">0</div>
-                        <div class="text-sm text-gray-500">Total Siswa Aktif</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 hover:-translate-y-1 transition duration-300">
-                        <div class="text-3xl font-bold text-navy-900 mb-1" id="count-guru">0</div>
-                        <div class="text-sm text-gray-500">Guru & Staf Pengajar</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-purple-500 hover:-translate-y-1 transition duration-300">
-                        <div class="text-3xl font-bold text-navy-900 mb-1" id="count-album">0</div>
-                        <div class="text-sm text-gray-500">Album Kegiatan</div>
-                    </div>
-                </div>
-
-                <div class="flex justify-center gap-4">
-                    <button onclick="app.showPage('siswa')" class="px-6 py-3 bg-navy-900 text-white rounded-lg hover:bg-blue-800 transition shadow">Cari Siswa</button>
-                    <button onclick="app.showPage('dokumentasi')" class="px-6 py-3 bg-white text-navy-900 border border-navy-900 rounded-lg hover:bg-gray-50 transition shadow">Lihat Galeri</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="page-siswa" class="page-section hidden fade-in">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-navy-900 border-l-4 border-blue-500 pl-4">Direktori Siswa</h2>
-                <input type="text" id="search-siswa" onkeyup="app.searchTable('siswa')" placeholder="Cari Nama / NISN..." class="mt-4 md:mt-0 w-full md:w-64 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-            <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
-                        <tr>
-                            <th class="p-4 border-b">Nama Lengkap</th>
-                            <th class="p-4 border-b">NISN</th>
-                            <th class="p-4 border-b">Kelas</th>
-                            <th class="p-4 border-b">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-siswa" class="text-sm"></tbody>
-                </table>
-            </div>
-            <p id="siswa-empty" class="hidden text-center text-gray-500 py-4">Data tidak ditemukan.</p>
-        </section>
-
-        <section id="page-guru" class="page-section hidden fade-in">
-             <h2 class="text-2xl font-bold text-navy-900 mb-8 border-l-4 border-green-500 pl-4">Dewan Guru</h2>
-             <div id="grid-guru" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                 </div>
-        </section>
-
-        <section id="page-dokumentasi" class="page-section hidden fade-in">
-            <div id="view-albums">
-                <h2 class="text-2xl font-bold text-navy-900 mb-6 border-l-4 border-purple-500 pl-4">Galeri Kegiatan</h2>
-                <div id="grid-albums" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-
-            <div id="view-photos" class="hidden">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                    <button onclick="gallery.backToAlbums()" class="flex items-center gap-2 text-gray-700 bg-white border px-4 py-2 rounded shadow-sm hover:bg-gray-50">
-                        ← Kembali
-                    </button>
-                    <h3 id="album-title-display" class="font-bold text-xl text-navy-900">Album</h3>
-                    <select id="photosPerPage" onchange="gallery.changeLimit()" class="border p-2 rounded text-sm">
-                        <option value="8">8 Foto</option>
-                        <option value="12" selected>12 Foto</option>
-                        <option value="24">24 Foto</option>
-                    </select>
-                </div>
-                
-                <div id="grid-photos" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
-                
-                <div class="mt-8 flex justify-center gap-4">
-                    <button id="btn-prev" onclick="gallery.prevPage()" class="px-4 py-2 border rounded disabled:opacity-50">Prev</button>
-                    <span id="page-info" class="px-4 py-2 bg-gray-100 rounded text-sm font-bold">1</span>
-                    <button id="btn-next" onclick="gallery.nextPage()" class="px-4 py-2 border rounded disabled:opacity-50">Next</button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <div id="lightbox" class="fixed inset-0 bg-black/95 z-[60] hidden flex flex-col items-center justify-center opacity-0 transition-opacity duration-300">
-        <button onclick="gallery.closeLightbox()" class="absolute top-4 right-4 text-white/70 hover:text-white p-2">✕ Tutup (ESC)</button>
-        
-        <div class="w-full h-full flex items-center justify-between px-4 md:px-10">
-            <button onclick="gallery.prevPhoto()" class="text-white/50 hover:text-white text-4xl p-4">‹</button>
-            
-            <div class="flex flex-col items-center max-w-[85vw] max-h-[85vh]">
-                <img id="lb-img" src="" class="max-w-full max-h-[80vh] object-contain shadow-2xl rounded">
-                <p id="lb-caption" class="text-gray-400 mt-4 text-sm font-mono"></p>
-            </div>
-            
-            <button onclick="gallery.nextPhoto()" class="text-white/50 hover:text-white text-4xl p-4">›</button>
-        </div>
-    </div>
-
-    <footer class="bg-navy-900 text-gray-400 py-6 text-center text-sm mt-auto">
-        &copy; <span id="year">2026</span> <span id="footer-sekolah">Sekolah</span>.
-    </footer>
-
-    <script>
-        // --- KONFIGURASI API ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbwafk4O4p62wSNAwVZtor1gReMBmoRUMOnQu_m4wB_Y0EaKG5uzr448aqtxEztRKSE/exec"; 
-
-        // --- GLOBAL STATE ---
-        let db = { siswa: [], guru: [], dokumentasi: [], info: {} };
-        
-        // --- APP CONTROLLER ---
-        const app = {
-            init: async () => {
-                document.getElementById('year').innerText = new Date().getFullYear();
-                await app.fetchData();
-            },
-
-            fetchData: async () => {
-                try {
-                    const res = await fetch(API_URL);
-                    const data = await res.json();
-                    db = data;
-                    
-                    // Update UI Info
-                    if(db.info.nama) {
-                        document.getElementById('nav-sekolah-nama').innerText = db.info.nama;
-                        document.getElementById('home-title').innerText = "Selamat Datang di " + db.info.nama;
-                        document.getElementById('footer-sekolah').innerText = db.info.nama;
-                    }
-
-                    // Render Counts
-                    document.getElementById('count-siswa').innerText = db.siswa.length;
-                    document.getElementById('count-guru').innerText = db.guru.length;
-                    
-                    // Pre-process Documentation Grouping
-                    gallery.processData();
-                    document.getElementById('count-album').innerText = Object.keys(gallery.albums).length;
-
-                    // Render Initial Data
-                    app.renderSiswa();
-                    app.renderGuru();
-                    gallery.renderAlbums();
-
-                    // Hide Loader
-                    document.getElementById('loading-screen').classList.add('hidden');
-                } catch (e) {
-                    alert("Gagal memuat data. Periksa koneksi internet.");
-                    console.error(e);
-                }
-            },
-
-            showPage: (pageId) => {
-                document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
-                document.getElementById('page-' + pageId).classList.remove('hidden');
-                document.getElementById('mobile-menu').classList.add('hidden');
-                window.scrollTo(0,0);
-            },
-
-            renderSiswa: () => {
-                const tbody = document.getElementById('tbody-siswa');
-                tbody.innerHTML = '';
-                db.siswa.forEach(s => {
-                    tbody.innerHTML += `
-                        <tr class="border-b hover:bg-gray-50 transition">
-                            <td class="p-4 font-medium text-navy-900">${s.nama || s.namasiswa}</td>
-                            <td class="p-4 text-gray-600">${s.nisn}</td>
-                            <td class="p-4 text-blue-600 font-semibold">${s.kelas}</td>
-                            <td class="p-4"><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Aktif</span></td>
-                        </tr>
-                    `;
-                });
-            },
-
-            searchTable: (type) => {
-                let input = document.getElementById('search-' + type).value.toUpperCase();
-                let rows = document.getElementById('tbody-' + type).getElementsByTagName('tr');
-                let found = false;
-                for (let i = 0; i < rows.length; i++) {
-                    let text = rows[i].textContent || rows[i].innerText;
-                    if (text.toUpperCase().indexOf(input) > -1) {
-                        rows[i].style.display = "";
-                        found = true;
-                    } else {
-                        rows[i].style.display = "none";
-                    }
-                }
-                document.getElementById('siswa-empty').classList.toggle('hidden', found);
-            },
-
-            renderGuru: () => {
-                const grid = document.getElementById('grid-guru');
-                grid.innerHTML = '';
-                db.guru.forEach(g => {
-                    grid.innerHTML += `
-                        <div class="bg-white rounded-lg shadow p-6 text-center border-t-4 border-green-500 hover:shadow-lg transition group">
-                            <div class="w-24 h-24 mx-auto bg-gray-200 rounded-full mb-4 overflow-hidden border-2 border-transparent group-hover:border-green-500 transition">
-                                <img src="${g.foto || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover">
-                            </div>
-                            <h3 class="font-bold text-lg text-navy-900">${g.nama || g.namaguru}</h3>
-                            <p class="text-sm text-gray-500">${g.mapel || 'Guru Pengajar'}</p>
-                        </div>
-                    `;
-                });
-            }
-        };
-
-        // --- GALLERY CONTROLLER (ADVANCED) ---
-        const gallery = {
-            albums: {},
-            currentPhotos: [],
-            currentPage: 1,
-            limit: 12,
-            activeIdx: 0,
-
-            processData: () => {
-                gallery.albums = {};
-                db.dokumentasi.forEach(item => {
-                    const name = item.album || 'Lainnya';
-                    if(!gallery.albums[name]) {
-                        gallery.albums[name] = { 
-                            cover: item.foto, 
-                            desc: item.desc || item.deskripsi, 
-                            photos: [] 
-                        };
-                    }
-                    gallery.albums[name].photos.push(item);
-                });
-            },
-
-            renderAlbums: () => {
-                const grid = document.getElementById('grid-albums');
-                grid.innerHTML = '';
-                Object.keys(gallery.albums).forEach(name => {
-                    const alb = gallery.albums[name];
-                    grid.innerHTML += `
-                        <div onclick="gallery.openAlbum('${name}')" class="bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer hover:shadow-xl transition group">
-                            <div class="h-48 overflow-hidden relative">
-                                <img src="${alb.cover}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                                <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">${alb.photos.length} Foto</div>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg text-navy-900 line-clamp-1">${name}</h3>
-                                <p class="text-sm text-gray-500 line-clamp-2">${alb.desc || 'Dokumentasi kegiatan sekolah'}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            },
-
-            openAlbum: (name) => {
-                gallery.currentPhotos = gallery.albums[name].photos;
-                gallery.currentPage = 1;
-                document.getElementById('album-title-display').innerText = name;
-                
-                document.getElementById('view-albums').classList.add('hidden');
-                document.getElementById('view-photos').classList.remove('hidden');
-                gallery.renderPhotos();
-                window.scrollTo(0,0);
-            },
-
-            backToAlbums: () => {
-                document.getElementById('view-photos').classList.add('hidden');
-                document.getElementById('view-albums').classList.remove('hidden');
-                window.scrollTo(0,0);
-            },
-
-            changeLimit: () => {
-                gallery.limit = parseInt(document.getElementById('photosPerPage').value);
-                gallery.currentPage = 1;
-                gallery.renderPhotos();
-            },
-
-            renderPhotos: () => {
-                const grid = document.getElementById('grid-photos');
-                grid.innerHTML = '';
-                const start = (gallery.currentPage - 1) * gallery.limit;
-                const end = start + gallery.limit;
-                const paginated = gallery.currentPhotos.slice(start, end);
-                const totalPages = Math.ceil(gallery.currentPhotos.length / gallery.limit);
-
-                paginated.forEach((item, idx) => {
-                    const globalIdx = start + idx;
-                    grid.innerHTML += `
-                        <div onclick="gallery.openLightbox(${globalIdx})" class="aspect-square bg-gray-200 rounded overflow-hidden cursor-zoom-in group relative">
-                            <img src="${item.foto}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition"></div>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('page-info').innerText = `Hal ${gallery.currentPage} dari ${totalPages}`;
-                document.getElementById('btn-prev').disabled = gallery.currentPage === 1;
-                document.getElementById('btn-next').disabled = gallery.currentPage >= totalPages;
-            },
-
-            nextPage: () => {
-                const totalPages = Math.ceil(gallery.currentPhotos.length / gallery.limit);
-                if(gallery.currentPage < totalPages) { gallery.currentPage++; gallery.renderPhotos(); }
-            },
-            
-            prevPage: () => {
-                if(gallery.currentPage > 1) { gallery.currentPage--; gallery.renderPhotos(); }
-            },
-
-            // LIGHTBOX LOGIC
-            openLightbox: (idx) => {
-                gallery.activeIdx = idx;
-                gallery.updateLightbox();
-                const lb = document.getElementById('lightbox');
-                lb.classList.remove('hidden');
-                setTimeout(() => lb.classList.remove('opacity-0'), 10);
-                document.body.classList.add('no-scroll');
-            },
-
-            closeLightbox: () => {
-                const lb = document.getElementById('lightbox');
-                lb.classList.add('opacity-0');
-                setTimeout(() => {
-                    lb.classList.add('hidden');
-                    document.body.classList.remove('no-scroll');
-                }, 300);
-            },
-
-            updateLightbox: () => {
-                const item = gallery.currentPhotos[gallery.activeIdx];
-                const img = document.getElementById('lb-img');
-                img.style.opacity = '0.5';
-                setTimeout(() => {
-                    img.src = item.foto;
-                    img.onload = () => img.style.opacity = '1';
-                    document.getElementById('lb-caption').innerText = `${gallery.activeIdx + 1} / ${gallery.currentPhotos.length}`;
-                }, 150);
-            },
-
-            nextPhoto: () => {
-                gallery.activeIdx = (gallery.activeIdx < gallery.currentPhotos.length - 1) ? gallery.activeIdx + 1 : 0;
-                gallery.updateLightbox();
-            },
-            
-            prevPhoto: () => {
-                gallery.activeIdx = (gallery.activeIdx > 0) ? gallery.activeIdx - 1 : gallery.currentPhotos.length - 1;
-                gallery.updateLightbox();
-            }
-        };
-
-        // --- KEYBOARD LISTENER ---
-        document.addEventListener('keydown', (e) => {
-            if(!document.getElementById('lightbox').classList.contains('hidden')) {
-                if(e.key === 'ArrowRight') gallery.nextPhoto();
-                if(e.key === 'ArrowLeft') gallery.prevPhoto();
-                if(e.key === 'Escape') gallery.closeLightbox();
-            }
-        });
-
-        // START APP
-        window.onload = app.init;
-    </script>
+<body>
+  <div class="iframe-container">
+    <iframe
+      id="app"
+      src="https://script.google.com/macros/s/AKfycbynBkQxByHx6J1e6VuVySOimaF028Hy-sXp0ehHGYIlP2EDKazzbmNpIvnzVjdsBUQ/exec"
+      scrolling="yes"
+      allowfullscreen="true"
+      webkitallowfullscreen="true"
+      mozallowfullscreen="true"
+      allow="fullscreen; camera; microphone; display-capture; geolocation;">
+    </iframe>
+  </div>
 </body>
 </html>
